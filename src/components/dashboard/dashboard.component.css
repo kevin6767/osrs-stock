@@ -1,0 +1,6 @@
+.dashboard-container {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center; /* Centers vertically */
+  height: 100vh; /* Sets the container to the full height of the viewport */
+}

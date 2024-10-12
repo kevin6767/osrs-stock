@@ -1,1 +1,11 @@
-<button>Open Nav</button>
+<div class="dashboard-container">
+  <form [formGroup]="itemForm" (ngSubmit)="goToItemPage()">
+    <input
+      type="text"
+      formControlName="itemName"
+      placeholder="Enter item name"
+      required
+    />
+    <button type="submit">Go</button>
+  </form>
+</div>
