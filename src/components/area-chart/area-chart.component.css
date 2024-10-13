@@ -1,0 +1,11 @@
+.chart-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  display: inline-block; /* Make the canvas display inline for scrolling */
+  width: 1200px; /* Set a larger width for the canvas as needed */
+  height: 400px; /* Set the height for your chart */
+}
