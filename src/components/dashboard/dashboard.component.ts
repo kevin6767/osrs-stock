@@ -7,8 +7,15 @@ import { AreaChartComponent } from '../area-chart/area-chart.component';
 
 interface ApiResponse {
   message: {
-    average: number | undefined; // Change this if necessary
-    daily: any; // Adjust based on actual data structure
+    prices: {
+      average: number | undefined; // Change this if necessary
+      daily: any; // Adjust based on actual data structure
+    };
+    details: {
+      item: {
+        icon_large: string | undefined; // Change this if necessary
+      };
+    };
   };
 }
 
@@ -30,12 +37,20 @@ export class DashboardComponent {
   };
   data: ApiResponse = {
     message: {
-      average: undefined,
-      daily: undefined,
+      prices: {
+        average: undefined,
+        daily: undefined,
+      },
+      details: {
+        item: {
+          icon_large: undefined,
+        },
+      },
     },
   };
   average: any = undefined;
   daily: any = undefined;
+  item_img: string | undefined = undefined;
 
   constructor(
     private router: Router,
@@ -57,11 +72,13 @@ export class DashboardComponent {
           this.data = data;
           console.log(this.data);
           this.timeData = transformData({
-            average: this.data.message.average,
-            daily: this.data.message.daily,
+            average: this.data.message.prices.average,
+            daily: this.data.message.prices.daily,
           });
 
           // Update the average and daily prices for the chart
+          this.item_img = this.data.message.details.item.icon_large;
+          console.log(this.item_img);
           this.average = this.timeData.transformedAverage;
           this.daily = this.timeData.transformedDaily;
 

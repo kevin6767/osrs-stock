@@ -22,7 +22,7 @@ export class AreaChartComponent implements OnChanges, OnInit {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
   @Input() dailyPrices: { date: string; daily: number }[] = [];
   @Input() movingAverages: { date: string; average: number }[] = [];
-
+  @Input() item_img: string | undefined;
   constructor() {
     Chart.register(...registerables);
   }

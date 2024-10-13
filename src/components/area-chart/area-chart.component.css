@@ -1,11 +1,21 @@
 .chart-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center elements horizontally */
+  padding: 20px; /* Add padding around the container */
+  max-width: 800px; /* Set a max width for the container */
+  margin: auto; /* Center the container on the page */
 }
 
-canvas {
-  display: inline-block; /* Make the canvas display inline for scrolling */
-  width: 1200px; /* Set a larger width for the canvas as needed */
-  height: 400px; /* Set the height for your chart */
+.chart-image {
+  display: block; /* Ensures the image behaves as a block element */
+  max-width: 200px; /* Adjusts width to fit the container */
+  height: auto; /* Maintains aspect ratio */
+  pointer-events: none; /* Prevents any interaction with the image */
+  margin: 0 auto; /* Centers the image horizontally */
+}
+
+.chart-canvas {
+  max-width: 100%; /* Make the chart responsive */
+  height: 400px; /* Set a fixed height for the chart */
 }

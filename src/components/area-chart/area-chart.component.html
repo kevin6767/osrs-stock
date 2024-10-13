@@ -1,25 +1,29 @@
+@if (item_img) {
+  <img [src]="item_img" alt="Item Image" class="chart-image" />
+}
 <div class="chart-container">
-  <div
-    *ngIf="
-      chartData.datasets[0].data.length > 0 ||
-      chartData.datasets[1].data.length > 0
-    "
-  >
-    <canvas
-      baseChart
-      [data]="chartData"
-      [options]="chartOptions"
-      [type]="'line'"
-      [plugins]="[]"
-    ></canvas>
-  </div>
+  @if (
+    chartData.datasets[0].data.length > 0 ||
+    chartData.datasets[1].data.length > 0
+  ) {
+    <div>
+      <canvas
+        baseChart
+        [data]="chartData"
+        [options]="chartOptions"
+        [type]="'line'"
+        [plugins]="[]"
+        class="chart-canvas"
+      ></canvas>
+    </div>
+  }
 
-  <div
-    *ngIf="
-      chartData.datasets[0].data.length === 0 &&
-      chartData.datasets[1].data.length === 0
-    "
-  >
-    <p>No data available to display.</p>
-  </div>
+  @if (
+    chartData.datasets[0].data.length === 0 &&
+    chartData.datasets[1].data.length === 0
+  ) {
+    <div>
+      <p>No data available to display.</p>
+    </div>
+  }
 </div>
