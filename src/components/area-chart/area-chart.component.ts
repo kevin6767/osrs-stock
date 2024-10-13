@@ -1,11 +1,15 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { ChartData, ChartOptions, registerables, Chart } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import 'chartjs-adapter-date-fns'; // Import the date adapter you're using
 import { CommonModule } from '@angular/common';
-import zoomPlugin from 'chartjs-plugin-zoom'; // Import the zoom plugin
-Chart.register(zoomPlugin);
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-area-chart',
@@ -14,11 +18,14 @@ Chart.register(...registerables);
   templateUrl: './area-chart.component.html',
   styleUrls: ['./area-chart.component.css'],
 })
-export class AreaChartComponent implements OnChanges {
+export class AreaChartComponent implements OnChanges, OnInit {
+  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
   @Input() dailyPrices: { date: string; daily: number }[] = [];
   @Input() movingAverages: { date: string; average: number }[] = [];
 
-  constructor() {}
+  constructor() {
+    Chart.register(...registerables);
+  }
 
   public chartData: ChartData<'line'> = {
     labels: [],
@@ -55,9 +62,6 @@ export class AreaChartComponent implements OnChanges {
           autoSkip: true,
           maxTicksLimit: 10,
         },
-        // This will prevent the graph from overflowing its container
-        min: 'your_start_date_here', // Set min date
-        max: 'your_end_date_here', // Set max date
       },
       y: {
         beginAtZero: true,
@@ -69,21 +73,28 @@ export class AreaChartComponent implements OnChanges {
         intersect: false,
         callbacks: {
           label: (tooltipItem) => {
-            const value = tooltipItem.parsed.y; // The value from the y-axis
-            const datasetLabel = tooltipItem.dataset.label; // Get the dataset label
-            return [`${datasetLabel}: ${value}`]; // Show the dataset label along with the value
+            const value = tooltipItem.parsed.y;
+            const datasetLabel = tooltipItem.dataset.label;
+
+            return [`${datasetLabel}: ${value}`];
           },
         },
       },
     },
   };
-
-  ngOnChanges(): void {
+  ngOnInit(): void {
     this.updateChartData();
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['dailyPrices'] || changes['movingAverages']) {
+      console.log('Daily Prices:', this.dailyPrices);
+      console.log('Moving Averages:', this.movingAverages);
+
+      this.updateChartData(); // Call updateChartData if inputs change
+    }
   }
 
   private updateChartData(): void {
-    // Check if dailyPrices or movingAverages are defined and not empty
     const hasDailyPrices =
       Array.isArray(this.dailyPrices) && this.dailyPrices.length > 0;
     const hasMovingAverages =
@@ -100,6 +111,7 @@ export class AreaChartComponent implements OnChanges {
       this.chartData.datasets[0].data = this.dailyPrices.map(
         (price) => price.daily,
       );
+      console.log(this.chartData.datasets[0].data);
     }
 
     if (hasMovingAverages) {
@@ -107,13 +119,8 @@ export class AreaChartComponent implements OnChanges {
         (avg) => avg.average,
       );
     }
-
-    // Optionally, adjust the canvas width based on the data length
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-      const chartWidth =
-        Math.max(this.dailyPrices.length, this.movingAverages.length) * 100; // Adjust the multiplier for desired width
-      canvas.style.width = `${chartWidth}px`;
+    if (this.chart) {
+      this.chart.update();
     }
   }
 }

@@ -48,19 +48,25 @@ export class DashboardComponent {
 
   goToItemPage() {
     const itemName = this.itemForm.get('itemName')?.value;
+    console.log(itemName);
     if (itemName) {
       // Navigate to the item page using the item name
       this.dataFetchingService
         .getData(itemName)
         .subscribe((data: ApiResponse) => {
           this.data = data;
+          console.log(this.data);
           this.timeData = transformData({
             average: this.data.message.average,
             daily: this.data.message.daily,
           });
 
+          // Update the average and daily prices for the chart
           this.average = this.timeData.transformedAverage;
           this.daily = this.timeData.transformedDaily;
+
+          console.log(this.average);
+          console.log(this.daily);
         });
     }
   }
