@@ -9,16 +9,24 @@
     />
     <button type="submit" class="submit-button">Search Items</button>
   </form>
+  <button (click)="toggleChart()" class="submit-button">Toggle Chart</button>
 </div>
 
 <div>
   @if (!isLoading) {
-    <app-area-chart
-      [dailyPrices]="daily"
-      [movingAverages]="average"
-      [item_img]="item_img"
-    >
-    </app-area-chart>
+    @if (lineChartMode) {
+      <app-area-chart
+        [dailyPrices]="daily"
+        [movingAverages]="average"
+        [item_img]="item_img"
+      >
+      </app-area-chart>
+    } @else {
+      <candle-stick-chart
+        [itemData]="hourlyData"
+        [id]="itemId"
+      ></candle-stick-chart>
+    }
   } @else {
     <div class="loading-container">Loading...</div>
   }

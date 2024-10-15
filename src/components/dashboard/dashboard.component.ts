@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DataFetchingService } from '../../services/data-fetching/data-fetching.service';
 import { transformData } from '../utils/epoch-time';
 import { AreaChartComponent } from '../area-chart/area-chart.component';
+import { CandleStickChartComponent } from '../candle-stick-chart/candle-stick-chart.component';
 
 interface ApiResponse {
   message: {
@@ -22,13 +23,21 @@ interface ApiResponse {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, AreaChartComponent],
+  imports: [
+    RouterModule,
+    ReactiveFormsModule,
+    AreaChartComponent,
+    CandleStickChartComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent {
   itemForm: FormGroup;
   isLoading: boolean = false;
+  lineChartMode: boolean = true;
+  hourlyData: any = {};
+  itemId: any = null;
   timeData: {
     transformedAverage: any | null;
     transformedDaily: any | null;
@@ -62,6 +71,21 @@ export class DashboardComponent {
     });
   }
 
+  toggleChart() {
+    const itemName = this.itemForm.get('itemName')?.value;
+    this.lineChartMode = !this.lineChartMode;
+    if (Object.keys(this.hourlyData).length === 0) {
+      this.isLoading = true;
+      this.dataFetchingService
+        .getHourlyData(itemName)
+        .subscribe((hourlyData: any) => {
+          this.hourlyData = hourlyData;
+          this.itemId = hourlyData.id;
+          this.isLoading = false;
+          console.log(hourlyData);
+        });
+    }
+  }
   goToItemPage() {
     const itemName = this.itemForm.get('itemName')?.value;
     if (itemName) {

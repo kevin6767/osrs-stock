@@ -17,4 +17,8 @@ export class DataFetchingService {
     console.log('Get data');
     return this.http.get(`http://127.0.0.1:5000/api/items/${name}`);
   }
+
+  getHourlyData(name: string): Observable<any> {
+    return this.http.get(`http://127.0.0.1:5000/api/items/hourly/${name}`);
+  }
 }
