@@ -43,3 +43,9 @@ form {
   background-color: #cccccc; /* Gray out button if disabled */
   cursor: not-allowed; /* Change cursor to indicate non-clickable */
 }
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -8,8 +8,9 @@ import {
 } from '@angular/core';
 import { ChartData, ChartOptions, registerables, Chart } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import 'chartjs-adapter-date-fns'; // Import the date adapter you're using
+import 'chartjs-adapter-date-fns';
 import { CommonModule } from '@angular/common';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 @Component({
   selector: 'app-area-chart',
@@ -23,8 +24,12 @@ export class AreaChartComponent implements OnChanges, OnInit {
   @Input() dailyPrices: { date: string; daily: number }[] = [];
   @Input() movingAverages: { date: string; average: number }[] = [];
   @Input() item_img: string | undefined;
+  public isZoomingOrPanning = false;
+
+  isLoading: boolean = false;
+
   constructor() {
-    Chart.register(...registerables);
+    Chart.register(...registerables, zoomPlugin);
   }
 
   public chartData: ChartData<'line'> = {
@@ -48,7 +53,6 @@ export class AreaChartComponent implements OnChanges, OnInit {
       },
     ],
   };
-
   public chartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: true,
@@ -68,50 +72,71 @@ export class AreaChartComponent implements OnChanges, OnInit {
       },
     },
     plugins: {
+      zoom: {
+        zoom: {
+          wheel: {
+            enabled: true,
+          },
+          pinch: {
+            enabled: true,
+          },
+          mode: 'x',
+          onZoomStart: () => (this.isZoomingOrPanning = true),
+          onZoomComplete: () => (this.isZoomingOrPanning = false),
+        },
+        pan: {
+          enabled: true,
+          mode: 'x',
+          onPanStart: () => (this.isZoomingOrPanning = true),
+          onPanComplete: () => (this.isZoomingOrPanning = false),
+        },
+        limits: {
+          x: { min: 'original', max: 'original' },
+        },
+      },
       tooltip: {
+        enabled: (context) => {
+          return !this.isZoomingOrPanning;
+        },
         mode: 'index',
         intersect: false,
         callbacks: {
           label: (tooltipItem) => {
             const value = tooltipItem.parsed.y;
             const datasetLabel = tooltipItem.dataset.label;
-
             return [`${datasetLabel}: ${value}`];
           },
         },
       },
     },
   };
+
   ngOnInit(): void {
     this.updateChartData();
   }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['dailyPrices'] || changes['movingAverages']) {
-      console.log('Daily Prices:', this.dailyPrices);
-      console.log('Moving Averages:', this.movingAverages);
-
-      this.updateChartData(); // Call updateChartData if inputs change
+      this.updateChartData();
     }
   }
 
   private updateChartData(): void {
+    this.isLoading = true;
     const hasDailyPrices =
       Array.isArray(this.dailyPrices) && this.dailyPrices.length > 0;
     const hasMovingAverages =
       Array.isArray(this.movingAverages) && this.movingAverages.length > 0;
 
-    // Clear existing data
     this.chartData.labels = [];
     this.chartData.datasets[0].data = [];
     this.chartData.datasets[1].data = [];
 
-    // Update labels and datasets based on the inputs
     if (hasDailyPrices) {
       this.chartData.labels = this.dailyPrices.map((price) => price.date);
       this.chartData.datasets[0].data = this.dailyPrices.map(
         (price) => price.daily,
       );
-      console.log(this.chartData.datasets[0].data);
     }
 
     if (hasMovingAverages) {
@@ -119,6 +144,7 @@ export class AreaChartComponent implements OnChanges, OnInit {
         (avg) => avg.average,
       );
     }
+    this.isLoading = false;
     if (this.chart) {
       this.chart.update();
     }

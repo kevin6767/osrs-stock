@@ -12,10 +12,14 @@
 </div>
 
 <div>
-  <app-area-chart
-    [dailyPrices]="daily"
-    [movingAverages]="average"
-    [item_img]="item_img"
-  >
-  </app-area-chart>
+  @if (!isLoading) {
+    <app-area-chart
+      [dailyPrices]="daily"
+      [movingAverages]="average"
+      [item_img]="item_img"
+    >
+    </app-area-chart>
+  } @else {
+    <div class="loading-container">Loading...</div>
+  }
 </div>

@@ -6,16 +6,20 @@
     chartData.datasets[0].data.length > 0 ||
     chartData.datasets[1].data.length > 0
   ) {
-    <div>
-      <canvas
-        baseChart
-        [data]="chartData"
-        [options]="chartOptions"
-        [type]="'line'"
-        [plugins]="[]"
-        class="chart-canvas"
-      ></canvas>
-    </div>
+    @if (!isLoading) {
+      <div>
+        <canvas
+          baseChart
+          [data]="chartData"
+          [options]="chartOptions"
+          [type]="'line'"
+          [plugins]="[]"
+          class="chart-canvas"
+        ></canvas>
+      </div>
+    } @else {
+      <div class="loading-container">Loading...</div>
+    }
   }
 
   @if (

@@ -28,6 +28,7 @@ interface ApiResponse {
 })
 export class DashboardComponent {
   itemForm: FormGroup;
+  isLoading: boolean = false;
   timeData: {
     transformedAverage: any | null;
     transformedDaily: any | null;
@@ -63,9 +64,9 @@ export class DashboardComponent {
 
   goToItemPage() {
     const itemName = this.itemForm.get('itemName')?.value;
-    console.log(itemName);
     if (itemName) {
       // Navigate to the item page using the item name
+      this.isLoading = true;
       this.dataFetchingService
         .getData(itemName)
         .subscribe((data: ApiResponse) => {
@@ -78,12 +79,9 @@ export class DashboardComponent {
 
           // Update the average and daily prices for the chart
           this.item_img = this.data.message.details.item.icon_large;
-          console.log(this.item_img);
           this.average = this.timeData.transformedAverage;
           this.daily = this.timeData.transformedDaily;
-
-          console.log(this.average);
-          console.log(this.daily);
+          this.isLoading = false;
         });
     }
   }
