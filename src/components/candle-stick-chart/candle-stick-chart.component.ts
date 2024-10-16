@@ -17,6 +17,7 @@ import {
 } from 'chartjs-chart-financial';
 import { CommonModule } from '@angular/common';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import 'chartjs-adapter-date-fns';
 
 Chart.register(
   OhlcElement,
@@ -45,8 +46,8 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
           high: number;
           highTime: number;
           low: number;
-          avgHighPrice: number;
-          avgLowPrice: number;
+          avgHighPrice: any;
+          avgLowPrice: any;
           timestamp: number;
         };
       };
@@ -56,9 +57,10 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
   constructor() {}
 
   public chartData: ChartData<'candlestick'> = {
+    labels: [],
     datasets: [
       {
-        label: 'Last hour',
+        label: '365 Days',
         data: [],
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
@@ -73,19 +75,15 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
       x: {
         type: 'time',
         time: {
-          unit: 'minute',
-          tooltipFormat: 'hh:mm',
-          displayFormats: {
-            minute: 'hh:mm',
-          },
+          unit: 'day',
         },
         ticks: {
           autoSkip: true,
-          maxTicksLimit: 10,
+          maxTicksLimit: 12, // Limit the number of ticks to fit a full year
         },
         title: {
           display: true,
-          text: 'Time',
+          text: 'Date',
         },
       },
       y: {
@@ -119,15 +117,12 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
         callbacks: {
           label: (tooltipItem) => {
             const { o, h, l, c } = tooltipItem.parsed as {
-              o: number;
+              o: any;
               h: number;
               l: number;
-              c: number;
+              c: any;
             };
-            return [
-              `High: ${h.toLocaleString()}`,
-              `Low: ${l.toLocaleString()}`,
-            ];
+            return [`Open: ${o}`, `High: ${h}`, `Low: ${l}`, `Close: ${c}`];
           },
         },
       },
@@ -135,13 +130,13 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
   };
 
   ngOnInit(): void {
-    this.updateChartData(); // Initialize chart data
-    this.addChartClickListener(); // Add click listener after chart initialization
+    this.updateChartData();
+    this.addChartClickListener();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['itemData'] && !changes['itemData'].firstChange) {
-      this.updateChartData(); // Update chart data when itemData changes
+      this.updateChartData();
     }
   }
 
@@ -149,26 +144,24 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
     console.log('Raw itemData:', this.itemData.message.data);
 
     const formattedData = Object.values(this.itemData.message.data).map(
-      (item) => {
+      (item, index, array) => {
         return {
-          x: item.timestamp,
-          o: item.avgLowPrice,
+          x: item.timestamp * 1000, // Ensure this is a valid Unix timestamp (in ms)
+          o: array[index - 1]?.avgLowPrice ?? null,
           h: item.avgHighPrice,
           l: item.avgLowPrice,
-          c: item.avgHighPrice,
+          c: array[index + 1]?.avgHighPrice ?? null,
         };
       },
     );
 
-    console.log('Formatted Data for Chart:', formattedData); // Log the formatted data
+    console.log('Formatted Data for Chart:', formattedData);
 
-    this.chartData.datasets[0].data = formattedData.map((dataPoint) => ({
-      ...dataPoint,
-      backgroundColor: 'rgba(75, 192, 192, 0.5)', // Default color
-    }));
+    this.chartData.datasets[0].data = formattedData;
+    this.chartData.labels = formattedData.map((data) => data.x);
 
     if (this.chart) {
-      this.chart.update(); // Update the chart to reflect new data
+      this.chart.update();
     }
   }
 
@@ -179,8 +172,9 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
 
     const timestamp = xScale?.getValueForPixel(clickX);
     if (!timestamp) return;
-    const rangeStart = timestamp - 15 * 60 * 1000; // 15 minutes in milliseconds
-    const rangeEnd = timestamp + 15 * 60 * 1000; // 15 minutes in milliseconds
+
+    const rangeStart = timestamp - 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+    const rangeEnd = timestamp + 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
     this.chartData.datasets[0].data = this.chartData.datasets[0].data.map(
       (dataPoint) => {
@@ -194,7 +188,7 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
       },
     );
 
-    this.chart.update(); // Update the chart to reflect changes
+    this.chart.update();
   }
 
   private addChartClickListener(): void {
@@ -209,12 +203,8 @@ export class CandleStickChartComponent implements OnChanges, OnInit {
           false,
         );
         if (activePoints.length) {
-          // Access the first active point safely
           const activePoint = activePoints[0];
-
-          // Use the correct structure to access x and y
-          const x = activePoint.element.x; // x value from the active point
-          const y = activePoint.element.y; // y value from the active point
+          const x = activePoint.element.x;
 
           if (typeof x === 'number') {
             this.highlightTimeRange(x);

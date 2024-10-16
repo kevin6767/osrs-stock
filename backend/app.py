@@ -34,7 +34,7 @@ def get_(name):
     session.headers.update({'User-Agent': 'angular-charts - @203283045518671872 on Discord'})
     print(session.headers)
     item_id = Item.get_ids(name)
-    hourlyResponse = session.get(hourly_url + '?timestep=1h&id=' + str(item_id))
+    hourlyResponse = session.get(hourly_url + '?timestep=24h&id=' + str(item_id))
     
     # Check if the request was successful   
     if hourlyResponse.status_code != 200:
